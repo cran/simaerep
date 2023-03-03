@@ -1,3 +1,6 @@
+# simaerep 0.4.3
+- delete performance unit tests (poisson faster than bootstrap) to accommodate CRAN request
+
 # simaerep 0.4.2
 - CRAN submission
 

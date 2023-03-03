@@ -12,6 +12,8 @@ status](https://github.com/openpharma/simaerep/workflows/R-CMD-check/badge.svg)]
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R Package Validation
 report](https://github.com/openpharma/simaerep/actions/workflows/validation.yml/badge.svg)](https://github.com/openpharma/simaerep/actions/workflows/validation.yml)
+[![CRAN
+release](https://www.r-pkg.org/badges/version/simaerep)](https://CRAN.R-project.org/package=simaerep)
 <!-- badges: end -->
 
 Simulate adverse event reporting in clinical trials with the goal of
@@ -26,6 +28,14 @@ test!”](http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html).
 
 ## Installation
 
+### CRAN
+
+``` r
+install.packages("simaerep")
+```
+
+### Development Version
+
 You can install the development version from
 [GitHub](https://github.com/) with:
 
@@ -34,6 +44,21 @@ You can install the development version from
 devtools::install_github("openpharma/simaerep")
 ```
 
+## IMPALA
+
+`simaerep` has been published as workproduct of the Inter-Company
+Quality Analytics ([IMPALA](https://impala-consortium.org/)) consortium.
+IMPALA aims to engage with Health Authorities inspectors on defining
+guiding principles for the use of advanced analytics to complement,
+enhance and accelerate current QA practices. `simaerep` has initially
+been developed at Roche but is currently evaluated by other companies
+across the industry to complement their quality assurance activities
+([see
+testimonials](https://impala-consortium.org/clinical-safety-reporting-work-product-stream/)).
+
+[![IMPALA
+logo](https://impala-consortium.org/wp-content/uploads/IMPALA-logo-x2.png)](https://impala-consortium.org/)
+
 ## Publication
 
 Koneswarakantha, B., Barmaz, Y., Ménard, T. et al. Follow-up on the Use
@@ -41,7 +66,10 @@ of Advanced Analytics for Clinical Quality Assurance: Bootstrap
 Resampling to Enhance Detection of Adverse Event Under-Reporting. Drug
 Saf (2020). <https://doi.org/10.1007/s40264-020-01011-5>
 
-## Vignettes/ Articles
+## Vignettes/ Articles/ Tutorials
+
+[video presentation 15
+min](https://vimeo.com/776275791?embedded=true&source=vimeo_logo&owner=189858368)
 
 - [Introduction](https://openpharma.github.io/simaerep/articles/intro.html)
 - [Usability
@@ -64,7 +92,7 @@ section](https://github.com/openpharma/simaerep/releases) generated
 using
 [thevalidatoR](https://github.com/insightsengineering/thevalidatoR).
 
-# Application
+## Application
 
 ``` r
 
@@ -123,6 +151,11 @@ df_visit %>%
 aerep <- simaerep(df_visit)
 
 plot(aerep, study = "A") 
+#> Warning: `all_equal()` was deprecated in dplyr 1.1.0.
+#> ℹ Please use `all.equal()` instead.
+#> ℹ And manually order the rows/cols as needed
+#> ℹ The deprecated feature was likely used in the simaerep package.
+#>   Please report the issue to the authors.
 ```
 
 <img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />

@@ -1,7 +1,7 @@
-0274f47a4ff0660c38b6853c65fae467 *DESCRIPTION
+46b673006a7dd6f539aa97023226819c *DESCRIPTION
 3a9c6cc9c14942d8280eec33f48057b8 *LICENSE
 84824ed081cb92c4a68707bf4346cc9a *NAMESPACE
-387956a8d3e004adf0130ad2ce9a95e6 *NEWS.md
+f9ff1af2914a512d6095200b4a499044 *NEWS.md
 1d4dc942983f0cffdd0f26e59ad48257 *R/0_imports.R
 f4117161c8a2a2c89b088e057255527d *R/S3_orivisit.R
 6bdd3ac2551284c44c98539a7ee6dd12 *R/S3_simaerep.R
@@ -12,8 +12,8 @@ d344261da38c1e643b93c581cf01e9ee *R/lint.R
 353c3c258cddf327d0fba4d5a82dc09a *R/simulate_test_data.R
 293bb19fe91ff911500ebb09c8cfe8f1 *R/sysdata.rda
 6fbc0f170addb6df812b025c4e9d00d7 *R/utils-pipe.R
-4cb867131e78a2817b867a570cc304d0 *README.md
-31232eac31516c7d879f920c5a7905c0 *inst/WORDLIST
+da117b44a07d20c7d8a4fd3336b87efe *README.md
+1c1f7599c421c250293907f39b37a2ba *inst/WORDLIST
 e9548c78ad8569cda2992056157baf4d *inst/logo/clin_trial_icon.png
 e6266c513f5972b764e6b23fd4eb3b33 *inst/logo/logo.R
 d6544ce6e0e4798b4f8e007f6afe034a *inst/logo/logo.png
@@ -73,7 +73,7 @@ b643ccf80ca4c53eabad6c67bc502ed7 *tests/testthat/test_check_df_visit.R
 19e52b4137411fbc0272db79909437e5 *tests/testthat/test_eval_sites.R
 9a5f0857602bf0cd19e62599a2032095 *tests/testthat/test_get_portf_perf.R
 aba1444146dcf4a6127fdc249ca8b5c3 *tests/testthat/test_plot.R
-ca5b50124df3aad253091b786a0bcaa8 *tests/testthat/test_sim_sites.R
-114569e007bd398ddf0293b0c8915a03 *tests/testthat/test_sim_studies.R
+2f4f7bb41c66795cd7c79829379dac07 *tests/testthat/test_sim_sites.R
+c46cfe52c38252f6fb7ed9680d9fef34 *tests/testthat/test_sim_studies.R
 36fdf8c40947783dc5e93efb27cb25f5 *tests/testthat/test_site_aggr.R
 922879a13749081a4eb5365ffb34c117 *tests/testthat/test_validation.R
