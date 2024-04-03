@@ -1,3 +1,11 @@
+# simaerep 0.5.0
+- allow flexible AE rates in data simulations
+- add vignette comparing simaerep to gsm performance
+- add over-reporting probability
+- fix dplyr warnings
+- fix warnings around ggplot and cowplot
+- https://github.com/openpharma/simaerep/issues/45
+
 # simaerep 0.4.3
 - delete performance unit tests (poisson faster than bootstrap) to accommodate CRAN request
 

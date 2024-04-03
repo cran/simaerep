@@ -66,6 +66,9 @@ validate_simaerep <- function(x) {
 #'  sets. Default: TRUE
 #'@param env optional, provide environment of original visit data, Default:
 #'  parent.frame()
+#'@param under_only, logical compute under-reporting probabilities only,
+#'  superseeds under_only parameter passed to [eval_sites()][eval_sites] and
+#'  [sim_sites()][sim_sites], Default: TRUE
 #'@return simaerep object
 #'@details executes [site_aggr()][site_aggr], [sim_sites()][sim_sites] and
 #'  [eval_sites()][eval_sites] on original visit data and stores all
@@ -89,7 +92,8 @@ validate_simaerep <- function(x) {
 #' str(aerep)
 #'
 #'@seealso [site_aggr()][site_aggr], [sim_sites()][sim_sites],
-#'  [eval_sites()][eval_sites], [orivisit()][orivisit], [plot.simaerep()][plot.simaerep]
+#'  [eval_sites()][eval_sites], [orivisit()][orivisit],
+#'  [plot.simaerep()][plot.simaerep]
 #'@rdname simaerep
 #'@export
 simaerep <- function(df_visit,
@@ -107,7 +111,8 @@ simaerep <- function(df_visit,
                      ),
                      progress = TRUE,
                      check = TRUE,
-                     env = parent.frame()) {
+                     env = parent.frame(),
+                     under_only = TRUE) {
 
   call <- rlang::enexpr(df_visit)
 
@@ -116,6 +121,9 @@ simaerep <- function(df_visit,
   if (check) {
     df_visit <- check_df_visit(df_visit)
   }
+
+  param_sim_sites$under_only <- under_only
+  param_eval_sites$under_only <- under_only
 
   df_site <- do.call(
     site_aggr,
@@ -134,6 +142,7 @@ simaerep <- function(df_visit,
         df_visit = df_visit
       ),
       check = FALSE,
+      progress = progress,
       param_sim_sites
     )
   )

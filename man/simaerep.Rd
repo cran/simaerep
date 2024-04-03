@@ -11,7 +11,8 @@ simaerep(
   param_eval_sites = list(method = "BH"),
   progress = TRUE,
   check = TRUE,
-  env = parent.frame()
+  env = parent.frame(),
+  under_only = TRUE
 )
 }
 \arguments{
@@ -35,6 +36,10 @@ sets. Default: TRUE}
 
 \item{env}{optional, provide environment of original visit data, Default:
 parent.frame()}
+
+\item{under_only, }{logical compute under-reporting probabilities only,
+superseeds under_only parameter passed to \link[=eval_sites]{eval_sites()} and
+\link[=sim_sites]{sim_sites()}, Default: TRUE}
 }
 \value{
 simaerep object
@@ -68,5 +73,6 @@ str(aerep)
 }
 \seealso{
 \link[=site_aggr]{site_aggr()}, \link[=sim_sites]{sim_sites()},
-\link[=eval_sites]{eval_sites()}, \link[=orivisit]{orivisit()}, \link[=plot.simaerep]{plot.simaerep()}
+\link[=eval_sites]{eval_sites()}, \link[=orivisit]{orivisit()},
+\link[=plot.simaerep]{plot.simaerep()}
 }

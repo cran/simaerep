@@ -67,6 +67,7 @@ test_that("prob_lower_site_ae_vs_study_ae() - high number of AEs at site compare
 })
 
 
+
 test_that("prob_lower_site_ae_vs_study_ae() - no study AEs, single site scenario, expected prob_low == 1", {
   prob_low <- prob_lower_site_ae_vs_study_ae(
     site_ae = c(9, 8, 7, 9, 6, 7, 8),

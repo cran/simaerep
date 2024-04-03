@@ -11,7 +11,8 @@ sim_test_data_study(
   ur_rate = 0,
   max_visit_mean = 20,
   max_visit_sd = 4,
-  ae_per_visit_mean = 0.5
+  ae_per_visit_mean = 0.5,
+  ae_rates = NULL
 )
 }
 \arguments{
@@ -22,7 +23,8 @@ sim_test_data_study(
 \item{frac_site_with_ur}{fraction of AE under-reporting sites, Default: 0}
 
 \item{ur_rate}{AE under-reporting rate, will lower mean ae per visit used to
-simulate patients at sites flagged as AE-under-reporting., Default: 0}
+simulate patients at sites flagged as AE-under-reporting. Negative Values
+will simulate over-reporting., Default: 0}
 
 \item{max_visit_mean}{mean of the maximum number of visits of each patient,
 Default: 20}
@@ -31,6 +33,8 @@ Default: 20}
 patient, Default: 4}
 
 \item{ae_per_visit_mean}{mean ae per visit per patient, Default: 0.5}
+
+\item{ae_rates}{vector with visit-specific ae rates, Default: Null}
 }
 \value{
 tibble with columns site_number, patnum, is_ur, max_visit_mean,
@@ -39,7 +43,8 @@ max_visit_sd, ae_per_visit_mean, visit, n_ae
 \description{
 evenly distributes a number of given patients across a number of
 given sites. Then simulates ae development of each patient reducing the
-number of reported AEs for patients distributed to AE-under-reporting sites.
+number of reported AEs for patients distributed to AE-under-reporting
+sites.
 }
 \details{
 maximum visit number will be sampled from normal distribution with
@@ -54,4 +59,6 @@ df_visit[which(df_visit$patnum == "P000001"),]
 df_visit <- sim_test_data_study(n_pat = 100, n_sites = 5,
     frac_site_with_ur = 0.2, ur_rate = 0.5)
 df_visit[which(df_visit$patnum == "P000001"),]
+ae_rates <- c(0.7, rep(0.5, 8), rep(0.3, 5))
+sim_test_data_study(n_pat = 100, n_sites = 5, ae_rates = ae_rates)
 }
