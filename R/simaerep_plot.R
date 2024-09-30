@@ -446,11 +446,29 @@ plot_study <- function(df_visit,
 
   # TODO: parametrize scores, fix legend
 
+  studies <- df_visit %>%
+    distinct(.data$study_id) %>%
+    pull(.data$study_id)
+
+  stopifnot(study %in% studies)
+  stopifnot(study %in% studies)
+  stopifnot(study %in% studies)
+
+  # filter studies -----------------------------------------------------------
+
+  df_visit <- df_visit %>%
+    filter(.data$study_id %in% study) %>%
+    collect()
+
   df_visit <- check_df_visit(df_visit)
 
-  stopifnot(study %in% unique(df_visit$study_id))
-  stopifnot(study %in% unique(df_site$study_id))
-  stopifnot(study %in% unique(df_eval$study_id))
+  df_site <- df_site %>%
+    filter(.data$study_id %in% study) %>%
+    collect()
+
+  df_eval <- df_eval %>%
+    filter(.data$study_id %in% study) %>%
+    collect()
 
   # alert level -------------------------------------------------------------
 
@@ -466,6 +484,7 @@ plot_study <- function(df_visit,
                        "alert_level_site",
                        "alert_level_study")))
   }
+
 
   # fill in pvalues when missing --------------------------------------------
 
@@ -485,47 +504,77 @@ plot_study <- function(df_visit,
   df_site <- df_site %>%
     mutate_at(vars(c("study_id", "site_number")), as.character)
 
-  # filter studies -----------------------------------------------------------
 
-  df_visit <- df_visit %>%
-    filter(.data$study_id %in% study)
+  # adjust to visit_med75 or alternative ---------------------------------------
 
-  df_site <- df_site %>%
-    filter(.data$study_id %in% study)
+  if (all(c("events_per_visit_study", "events_per_visit_site") %in% colnames(df_eval))) {
+    col_mean_site <- "events_per_visit_site"
+  } else {
+    col_mean_site <- "mean_ae_site_med75"
+  }
 
-  df_eval <- df_eval %>%
-    filter(.data$study_id %in% study)
+  if ("visit_med75" %in% colnames(df_site)) {
+    col_visit <- "visit_med75"
+
+    df_pat <- pat_aggr(df_visit)
+
+    df_visit_med75 <- df_visit %>%
+      left_join(
+        df_site %>%
+          select(c("study_id", "site_number", "visit_med75")),
+        by = c("study_id", "site_number")
+      ) %>%
+      left_join(
+        df_pat %>%
+          select(c("study_id", "site_number", "patnum", "max_visit_per_pat")),
+        by = c("study_id", "site_number", "patnum")
+      ) %>%
+      filter(.data$visit <= .data$visit_med75, .data$max_visit_per_pat >= .data$visit_med75) %>%
+      select(- c("visit_med75", "max_visit_per_pat"))
+
+  } else {
+    col_visit <- "max_visit"
+    df_visit_med75 <- df_visit
+  }
 
   # ordered sites -------------------------------------------------------------
 
+  if (any(stringr::str_detect(colnames(df_eval), "_adj$"))) {
+    thresh <- 0.5
+    breaks <- c(0, 0.5, 0.75, 0.95, ifelse(max(df_eval[[prob_col]], na.rm = TRUE) > 0.95,
+                                           max(df_eval[[prob_col]], na.rm = TRUE) + 0.1,
+                                           NA))
+    } else {
+    thresh <- 0.9
+    breaks <- c(0, 0.9, 0.95, 0.99, ifelse(max(df_eval[[prob_col]], na.rm = TRUE) > 0.95,
+                                           max(df_eval[[prob_col]], na.rm = TRUE) + 0.1,
+                                           NA))
+    }
+
   n_site_ur_gr_0p5 <- df_eval %>%
-    filter(.data[[prob_col]] > 0.5) %>%
+    filter(.data[[prob_col]] > thresh) %>%
     nrow()
 
   if (n_site_ur_gr_0p5 > 0) {
     sites_ordered <- df_eval %>%
-      arrange(.data$study_id, desc(.data[[prob_col]]), .data$mean_ae_site_med75) %>%
-      filter(.data[[prob_col]] > 0.5) %>%
+      arrange(.data$study_id, desc(.data[[prob_col]]), .data[[col_mean_site]]) %>%
+      filter(.data[[prob_col]] > thresh) %>%
       head(n_sites) %>%
       .$site_number
   } else {
     sites_ordered <- df_eval %>%
-      arrange(.data$study_id, desc(.data[[prob_col]]), .data$mean_ae_site_med75) %>%
+      arrange(.data$study_id, desc(.data[[prob_col]]), .data[[col_mean_site]]) %>%
       head(6) %>%
       .$site_number
   }
 
   # mean AE development ------------------------------------------------------
 
-  df_mean_ae_dev_site <- df_visit %>%
-    group_by(.data$study_id, .data$site_number, .data$patnum) %>%
-    mutate(max_visit_per_pat = max(.data$visit)) %>%
-    ungroup() %>%
+  df_mean_ae_dev_site <- df_visit_med75 %>%
     left_join(df_site, by = c("study_id", "site_number")) %>%
-    filter(.data$visit <= .data$visit_med75, .data$max_visit_per_pat >= .data$visit_med75) %>%
     group_by(.data$study_id,
              .data$site_number,
-             .data$visit_med75,
+             .data[[col_visit]],
              .data$n_pat,
              .data$visit,
              .data$alert_level_site) %>%
@@ -533,17 +582,17 @@ plot_study <- function(df_visit,
     ungroup()
 
   df_mean_ae_dev_study <- df_visit %>%
-    group_by(.data$study_id,
-             .data$site_number,
-             .data$patnum) %>%
-    mutate(max_visit_per_pat = max(.data$visit)) %>%
+    left_join(
+      df_site,
+      by = c("study_id", "site_number")
+    ) %>%
     group_by(.data$study_id) %>%
     mutate(
-      visit_med75 = ceiling(median(.data$max_visit_per_pat) * 0.75),
+      visit_max = median(.data[[col_visit]]),
       n_pat = n_distinct(.data$patnum)
     ) %>%
+    filter(.data$visit <= .data$visit_max) %>%
     ungroup() %>%
-    filter(.data$visit <= .data$visit_med75, .data$max_visit_per_pat >= .data$visit_med75) %>%
     group_by(.data$study_id) %>%
     mutate(n_pat_with_med75 = n_distinct(.data$patnum)) %>%
     group_by(.data$study_id,
@@ -567,10 +616,7 @@ plot_study <- function(df_visit,
   # define score cut-offs + labels----------------------------------------------
 
   palette <- RColorBrewer::brewer.pal(9, "Blues")[c(3, 5, 7, 9)]
-  breaks <- c(0, 0.5, 0.75, 0.95, ifelse(max(df_eval[[prob_col]], na.rm = TRUE) > 0.95,
-                                    max(df_eval[[prob_col]], na.rm = TRUE) + 0.1,
-                                    NA)
-              )
+
 
   breaks <- breaks[! is.na(breaks)]
 
@@ -581,8 +627,11 @@ plot_study <- function(df_visit,
     )
 
   df_mean_ae_dev_site <- df_mean_ae_dev_site %>%
-    select(- "visit_med75") %>%
-    left_join(df_eval, by = c("study_id", "site_number"))
+    left_join(
+      df_eval %>%
+        select(- any_of(col_visit)),
+      by = c("study_id", "site_number")
+    )
 
   # we have to split site ae dev up because alert sites get plotted
   # over if there are many sites
@@ -600,8 +649,12 @@ plot_study <- function(df_visit,
            "alert_level_study")) %>%
     distinct()
 
+  if (! "n_pat_with_med75" %in% colnames(df_site)) {
+    df_site$n_pat_with_med75 <- df_site$n_pat
+  }
+
   df_label <- df_mean_ae_dev_site %>%
-    filter(.data$visit == .data$visit_med75, .data$site_number %in% sites_ordered) %>%
+    filter(.data$visit == .data[[col_visit]], .data$site_number %in% sites_ordered) %>%
     select(c("study_id",
            "site_number",
            "visit",
@@ -614,9 +667,9 @@ plot_study <- function(df_visit,
            "n_pat",
            "n_pat_with_med75")) %>%
     left_join(
-      select(df_eval, - c(
+      select(df_eval, - any_of(c(
               "n_pat",
-              "n_pat_with_med75"))
+              "n_pat_with_med75")))
       , by = c("study_id", "site_number")
     ) %>%
     left_join(df_alert, by = c("study_id", "site_number")) %>%
@@ -679,12 +732,6 @@ plot_study <- function(df_visit,
     geom_point(
       data = df_label,
       color = "grey"
-    ) +
-    annotate("text",
-      x = 0.2 * max_visit_study,
-      y = 0.9 * max_ae_study,
-      label = paste0(n_pat_with_med75, "/", n_pat),
-      na.rm = TRUE
     ) +
     annotate("label",
       x = 0.5 * max_visit_study,
@@ -869,6 +916,9 @@ plot_visit_med75 <- function(df_visit,
     ungroup()
 
   df_label <- df_plot %>%
+    mutate(
+      n_pat_with_med75 = ifelse(is.na(.data$n_pat_with_med75), .data$n_pat, .data)
+    ) %>%
     select(c(
       "study_id",
       "site_number",

@@ -59,40 +59,35 @@ testimonials](https://impala-consortium.org/clinical-safety-reporting-work-produ
 [![IMPALA
 logo](https://impala-consortium.org/wp-content/uploads/IMPALA-logo-x2.png)](https://impala-consortium.org/)
 
-## Publication
+## Publications
+
+Koneswarakantha, B., Adyanthaya, R., Emerson, J. et al. An Open-Source R
+Package for Detection of Adverse Events Under-Reporting in Clinical
+Trials: Implementation and Validation by the IMPALA (Inter coMPany
+quALity Analytics) Consortium. Ther Innov Regul Sci 58, 591–599 (2024).
+<https://doi.org/10.1007/s43441-024-00631-8>
 
 Koneswarakantha, B., Barmaz, Y., Ménard, T. et al. Follow-up on the Use
 of Advanced Analytics for Clinical Quality Assurance: Bootstrap
 Resampling to Enhance Detection of Adverse Event Under-Reporting. Drug
 Saf (2020). <https://doi.org/10.1007/s40264-020-01011-5>
 
-## Vignettes/ Articles/ Tutorials
+## Tutorials
 
-[video presentation 15
-min](https://vimeo.com/776275791?embedded=true&source=vimeo_logo&owner=189858368)
-
-- [Introduction](https://openpharma.github.io/simaerep/articles/intro.html)
-- [Usability
-  Limits](https://openpharma.github.io/simaerep/articles/usability_limits.html)
-- [Check Poisson Test
-  Applicability](https://openpharma.github.io/simaerep/articles/check_poisson.html)
-- [SAS
-  Files](https://openpharma.github.io/simaerep/articles/sas_files.html)
-- [Adjusted Evaluation Point
-  visit_med75](https://openpharma.github.io/simaerep/articles/visit_med75.html)
-- [Aggregate AEs by Days or
-  Visit?](https://openpharma.github.io/simaerep/articles/visits_or_days.html)
-- [Portfolio
-  Performance](https://openpharma.github.io/simaerep/articles/portfolio_perf.html)
+- [video presentation 15
+  min](https://vimeo.com/776275791?embedded=true&source=vimeo_logo&owner=189858368)
+- [Documentation with Vignettes](https://openpharma.github.io/simaerep/)
 
 ## Validation Report
 
 Download as pdf in the [release
 section](https://github.com/openpharma/simaerep/releases) generated
 using
-[thevalidatoR](https://github.com/insightsengineering/thevalidatoR).
+[thevalidatoR](https://github.com/insightsengineering/thevalidatoR/).
 
 ## Application
+
+Recommended Threshold: `aerep$dfeval$prob_low_prob_ur: 0.95`
 
 ``` r
 
@@ -150,7 +145,7 @@ df_visit %>%
 
 aerep <- simaerep(df_visit)
 
-plot(aerep, study = "A") 
+plot(aerep, study = "A")
 ```
 
 <img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
@@ -166,3 +161,71 @@ upper left corner indicate the ratio of patients that have been used for
 the analysis against the total number of patients. Patients that have
 not been on the study long enough to reach the evaluation point
 (visit_med75, see introduction) will be ignored.*
+
+## Optimized Statistical Performance
+
+Following the recommendation of our latest [performance
+benchmark](https://openpharma.github.io/simaerep/articles/performance.html)
+statistical performance can be increased by using the
+[inframe](https://openpharma.github.io/simaerep/articles/inframe.html)
+algorithm without multiplicity correction.
+
+**Note that the plot is more noisy because no patients are excluded and
+only a few patients contribute to the event count at higher visits**
+
+Recommended Threshold: `aerep$dfeval$prob_low_prob_ur: 0.99`
+
+``` r
+aerep <- simaerep(
+  df_visit,
+  inframe = TRUE,
+  visit_med75 = FALSE,
+  mult_corr = FALSE
+)
+
+plot(aerep, study = "A")
+```
+
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+
+## In Database Calculation
+
+The
+[inframe](https://openpharma.github.io/simaerep/articles/inframe.html)
+algorithm uses only `dbplyr` compatible table operations and can be
+executed within a database backend as we demonstrate here using
+`duckdb`.
+
+However, we need to provide a in database table that has as many rows as
+the desired replications in our simulation, instead of providing an
+integer for the `r` parameter.
+
+``` r
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = ":memory:")
+df_r <- tibble(rep = seq(1, 1000))
+
+dplyr::copy_to(con, df_visit, "visit")
+dplyr::copy_to(con, df_r, "r")
+
+tbl_visit <- tbl(con, "visit")
+tbl_r <- tbl(con, "r")
+
+
+aerep <- simaerep(
+  tbl_visit,
+  r = tbl_r,
+  inframe = TRUE,
+  visit_med75 = FALSE,
+  mult_corr = FALSE
+)
+
+plot(aerep, df_visit = tbl_visit)
+#> study = NULL, defaulting to study:A
+```
+
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
+
+``` r
+
+DBI::dbDisconnect(con)
+```
